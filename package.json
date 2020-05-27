@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "nodeppt serve slide.md"
+    "serve": "nodeppt serve slide.md",
+    "build": "nodeppt build slide.md"
   },
   "repository": {
     "type": "git",
