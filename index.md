@@ -1,106 +1,213 @@
-title: Vue3-alpha 介绍
+title: Vue3 Reactivity APIs analyze
 speaker: hubingliang
-url: https://github.com/hubingliang/-vue3-introduce
+url: git@github.com:hubingliang/vue3-analyze.git
 
 <slide class="bg-black-blue aligncenter">
 
-# Vue3-alpha 介绍 {.text-landing.text-shadow}
+# Vue3 Reactivity APIs analyze{.text-landing.text-shadow}
 
-By hubingliang {.text-intro}
+Reactivity APIs analyze {.text-intro}
 
-<slide class="bg-black-blue aligncenter">
+[:fa-github: Github](https://github.com/hubingliang/vue3-analyze){.button.ghost}
 
-## setup
+:::footer
 
-setup => beforeCreate & Created
+[By Hubingliang](){.alignright}
+<slide :class="size-50">
 
-<slide class="bg-black-blue aligncenter">
+## [Reactivity APIs](https://composition-api.vuejs.org/api.html#reactivity-apis)
 
-## Lifecycle Hooks
-
-- ~~beforeCreate~~ -> use setup()
-- ~~created~~ -> use setup()
-- beforeMount -> onBeforeMount
-- mounted -> onMounted
-- beforeUpdate -> onBeforeUpdate
-- updated -> onUpdated
-- beforeDestroy -> onBeforeUnmount
-- destroyed -> onUnmounted
-- errorCaptured -> onErrorCaptured
-
-<slide class="bg-black-blue aligncenter">
-
-![carbon.png](https://i.loli.net/2020/03/01/gf34JuyxEqpHvLS.png)
-
-<slide class="bg-black-blue aligncenter">
-
-## New hooks
-
-- onRenderTracked
-- onRenderTriggered
-
-![carbon (1).png](https://i.loli.net/2020/03/01/Qs7l4pqkr5fJU9I.png)
-
-<slide class="bg-black-blue aligncenter">
-
-## 响应式实现
-
-- ref
 - reactive
-- baseHandlers
-- collectionHandlers (Set, Map, WeakMap, WeakSet)
-- effect
+- ref
+- computed
+- readonly
+- watchEffect
+- watch
 
-<slide class="bg-black-blue aligncenter">
-
-## ref
-
-- 除了对象外其他类型的响应式处理
-- 对于对象解构赋值时响应丢失的处理
-- 类似于 reactive 的超集
-
-<slide class="bg-black-blue aligncenter">
-
-![carbon (3).png](https://i.loli.net/2020/01/18/RxqlH71sNXATe8a.png)
-
-<slide class="bg-black-blue aligncenter">
-
-## customRef
-
-customRef 用于自定义一个 ref，可以显式地控制依赖追踪和触发响应，接受一个工厂函数，两个参数分别是用于追踪的 track 与用于触发响应的 trigger，并返回一个一个带有 get 和 set 属性的对象。
-
-<slide class="bg-black-blue aligncenter">
-
-## shallowRef
-
-创建一个 ref ，将会追踪它的 .value 更改操作，但是并不会对变更后的 .value 做响应式代理转换（即变更不会调用 reactive）
-![carbon (1).png](https://i.loli.net/2020/05/25/NAvHsuphzYa2oPL.png)
-
-<slide class="bg-black-blue aligncenter">
+<slide>
+:::column {.vertical-align}
 
 ## reactive
 
-- 只针对对象做响应式处理 (Proxy)
-- 建立响应式与原始数据的双向映射 (WeakMap)
-- reactive / template 会把 ref 解套
+响应式转换是“深层的”：会影响对象内部所有嵌套的属性。基于 ES2015 的 Proxy 实现，返回的代理对象不等于原始对象。建议仅使用代理对象而避免依赖原始对象。
 
-<slide class="bg-black-blue aligncenter">
+---
 
-Reflect.get(target, key, receiver) vs target[key]
+Example {.text-subtitle}
 
-![carbon (4).png](https://i.loli.net/2020/01/18/j1hRvmzaypcOPTX.png)
+```html
+<p>Count: {{ data.count }}</p>
+```
 
-<slide class="bg-black-blue aligncenter">
+```js
+import { reactive } from "vue";
+export default {
+  setup() {
+    // beforeCreate & Created
+    const data = reactive({ count: 0 });
+    return {
+      data,
+    };
+  },
+};
+```
 
-## baseHandlers
+<slide>
+:::column {.vertical-align}
 
-- 对于原始对象数据，会通过 Proxy 劫持，返回新的响应式数据(代理数据)
-- 对于代理数据的任何读写操作，都会通过 Refelct 反射到原始对象上
-- 在这个过程中，对于读操作，会执行收集依赖的逻辑。对于写操作，会触发监听函数的逻辑
-- collectionHandlers (Set, Map, WeakMap, WeakSet)
+## ref
 
-<slide class="bg-black-blue aligncenter">
+接受一个参数值并返回一个响应式且可改变的 ref 对象。ref 对象拥有一个指向内部值的单一属性 .value。
 
-## effect
+如果传入 ref 的是一个对象，将调用 reactive 方法进行深层响应转换。
 
-- 注册监听函数
+---
+
+Example {.text-subtitle}
+
+```html
+<p>Count: {{ count }}</p>
+```
+
+```js
+import { ref } from "vue";
+export default {
+  setup() {
+    const count = ref(0);
+    return {
+      count,
+    };
+  },
+};
+```
+
+<slide>
+:::column {.vertical-align}
+
+## computed
+
+传入一个 getter 函数，返回一个默认不可手动修改的 ref 对象。
+
+如果传入 ref 的是一个对象，将调用 reactive 方法进行深层响应转换。
+
+---
+
+Example {.text-subtitle}
+
+```html
+<p>Count: {{ count }}</p>
+<p>plusOne: {{ plusOne }}</p>
+```
+
+```js
+import { ref, computed } from "vue";
+export default {
+  setup() {
+    const count = ref(0);
+    const plusOne = computed(() => count.value + 1);
+    return {
+      count,
+      plusOne,
+    };
+  },
+};
+```
+
+<slide>
+:::column {.vertical-align}
+
+## readonly
+
+传入一个对象（响应式或普通）或 ref，返回一个原始对象的只读代理。一个只读的代理是“深层的”，对象内部任何嵌套的属性也都是只读的。
+
+---
+
+Example {.text-subtitle}
+
+```js
+import { reactive, readonly } from "vue";
+export default {
+  setup() {
+    const original = reactive({ count: 0 });
+    const copy = readonly(original);
+    // original 上的修改会触发 copy 上的侦听
+    original.count++;
+    // 无法修改 copy 并会被警告
+    copy.count++; // warning!
+    return {
+      original,
+      copy,
+    };
+  },
+};
+```
+
+<slide>
+:::column {.vertical-align}
+
+## watchEffect
+
+立即执行传入的一个函数，并响应式追踪其依赖，并在其依赖变更时重新运行该函数。
+
+---
+
+Example {.text-subtitle}
+
+```html
+<p>Count: {{ count }}</p>
+<button @click="addCount">add</button>
+```
+
+```js
+import { ref, watchEffect } from "vue";
+export default {
+  setup() {
+    const count = ref(0);
+    const addCount = () => count.value++;
+    watchEffect(() => console.log("count: ", count.value));
+    return {
+      count,
+      addCount,
+    };
+  },
+};
+```
+
+<slide>
+:::column {.vertical-align}
+
+## watch
+
+watch 需要侦听特定的数据源，并在回调函数中执行副作用。默认情况是懒执行的，也就是说仅在侦听的源变更时才执行回调。
+
+对比 watchEffect，watch 允许我们：
+
+- 懒执行副作用；
+- 更明确哪些状态的改变会触发侦听器重新运行副作用；
+- 访问侦听状态变化前后的值。
+
+---
+
+Example {.text-subtitle}
+
+```html
+<p>Count: {{ count }}</p>
+<button @click="addCount">add</button>
+```
+
+```js
+import { ref, watchEffect } from "vue";
+export default {
+  setup() {
+    const count = ref(0);
+    const addCount = () => count.value++;
+    watch(count, (count, prevCount) => {
+      console.log("count: ", count);
+    });
+    return {
+      count,
+      addCount,
+    };
+  },
+};
+```
