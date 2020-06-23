@@ -211,3 +211,47 @@ export default {
   },
 };
 ```
+
+<slide>
+## raw vs reactive
+
+:::column {.vertical-align}
+
+raw {.text-subtitle}
+
+```js
+const rawObj = {
+  __v_isReactive: true,
+  __v_raw: undefined,
+  __v_reactive: reactiveObj,
+};
+```
+
+---
+
+reactive {.text-subtitle}
+
+```js
+const reactiveObj = {
+  __v_isReactive: true,
+  __v_raw: rawObj,
+  __v_reactive: reactiveObj,
+};
+```
+
+<slide>
+## effect function
+
+```ts
+const effectStack: effectFunction[] = []
+const trackStack: shouldTrack[] = []
+const targetMap: WeakMap<Target, depsMap: Map<Key, dep: Set<effectFunction>>> = new WeakMap();
+const effectFunction = {
+  id: 0, // effectFunction id
+  _isEffect: true,
+  active: true,
+  raw: Function,
+  deps: [dep: Set]
+  options: {}
+};
+```
