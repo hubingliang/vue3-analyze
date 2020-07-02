@@ -1,7 +1,5 @@
 # vue3 响应式原理以及依赖收集源码解析
 
-[分享 ppt](https://vue-reactivity-api.netlify.app/)
-
 ## [Reactivity APIs](https://composition-api.vuejs.org/api.html#reactivity-apis)
 
 - reactive
